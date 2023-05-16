@@ -1,5 +1,11 @@
-#analysis of 230508 ASVs 
-all_1perc_seqs <- read.csv("230508/1%_ASVs.csv")
+#analysis of ASVs which passed the 1% total depth of all samples cut off
+
+#set working directory----
+getwd()
+#"/Users/samanthabeal/Documents/MSc/Bioinformatics/UNIX-opt-new"
+
+#analysis of 230516 ASVs 
+all_1perc_seqs <- read.csv("gDNA/230516/1%_ASVs.csv")
 
 #plotting----
 #fish/ASV tile matrix----
@@ -59,7 +65,7 @@ row.names(ASVperfish) <- uniqueFish$Fish
 
 #save
 library(readr)
-write_csv(ASVperfish, "230508/true_false_matrix.csv")
+write_csv(ASVperfish, "gDNA/230516/true_false_matrix.csv")
 
 #change from true/false to 1/0 by making a matrix where true=1, false=0
 ASVperfishmatrix <- data.matrix(ASVperfish)
@@ -83,46 +89,49 @@ ggplot(matrix.long, aes(x = Var2, y = Var1, fill = value)) +
         legend.position = "none",
         text = element_text(size = 20)) +
   xlab("ASV") + ylab("Fish") +
-  ggtitle("Consistently detected ASVs", 
-          subtitle = "Determined through assessing only PCR reps that had >= 1% of total retained read depth (after running the pipeline)")
+  ggtitle("SmaI-corII variants")
 
 #histogram----
 #plot
 ggplot(all_1perc_seqs, aes(x=Sequence_length)) +
-  geom_histogram(binwidth = 1) +
+  geom_histogram(binwidth = 1, fill ="black", colour="grey") +
   theme(panel.grid.major = element_blank(), 
         panel.grid.minor = element_blank(),
         panel.background = element_blank(), 
-        axis.line = element_line(colour = "black")) +
-  xlab("Sequence length (in bp)") + ylab("Number of ASVs this length") +
+        axis.line = element_line(colour = "black"),
+        text = element_text(size = 20)) +
+  xlab("Sequence length (bp)") + ylab("Number of ASVs this length") +
   ggtitle("ASV sequence length distribution")
 
 #stacked bar graph----
- 
-#plot total depth
+#plot total depth as % of reads per fish
 ggplot(all_1perc_seqs, aes(x=Fish, y=Total.depth, fill=ASV)) +
-  geom_bar(position = "stack", stat = "identity") +
+  geom_bar(position = "fill", stat = "identity") +
   theme(panel.grid.major = element_blank(), 
         panel.grid.minor = element_blank(),
         panel.background = element_blank(), 
         axis.line = element_line(colour = "black"),
         text = element_text(size = 20),
         axis.text.x = element_text(angle=70, vjust = 0.6)) +
-  xlab("Fish") + ylab("Total read depth retained") +
+  xlab("Fish") + ylab("Proportion of retained depth") +
   ggtitle("Proportion of ASVs within each fish")
 
-#plot average depth
-ggplot(all_1perc_seqs, aes(x=Fish, y=Average.depth, fill=ASV)) +
-  geom_bar(position = "stack", stat = "identity") +
+ggplot(all_1perc_seqs, aes(x="", y=Total.depth, fill=ASV)) +
+  geom_bar(position = "fill", stat = "identity") +
   theme(panel.grid.major = element_blank(), 
         panel.grid.minor = element_blank(),
         panel.background = element_blank(), 
         axis.line = element_line(colour = "black"),
-        text = element_text(size = 20),
-        axis.text.x = element_text(angle=70, vjust = 0.6)) +
-  xlab("Fish") + ylab("Average read depth retained") +
-  ggtitle("Proportion of ASVs within each fish")
+        text = element_text(size = 20)) +
+  xlab("gDNA from 16 Atlantic Whitefish") + ylab("Proportion of retained depth") +
+  ggtitle("Proportion of ASVs across all gDNA samples") 
 
+#to add percentage labels = need to make new df, use above code to plot
+#but change data from all_1perc_seqs to gDNA_percentage when plotting
+#gDNA_percentage <- aggregate(Total.depth ~ ASV + Fish, data=all_1perc_seqs, FUN=sum)
+#gDNA_percentage$Percent <- (gDNA_percentage$Total.depth/sum(gDNA_percentage$Total.depth))*100
+
+#+ geom_text(aes(label = round(Percent, digits = 1)), size = 3, position = position_stack(vjust = 0.5))
 
 
 #make fasta for downstream analysis----
@@ -145,7 +154,7 @@ UNIXall_print <-
 
 #allseqs
 write.table(UNIXall_print, 
-            file = "230508/ASVs.fasta", 
+            file = "gDNA/230516/ASVs.fasta", 
             col.names = FALSE, 
             row.names = FALSE, 
             quote = FALSE)
@@ -157,9 +166,9 @@ write.table(UNIXall_print,
 # change "DNA" to "RNA" or "AA" if necessary
 library("Biostrings")
 library("here")
-#"here() starts at /Users/samanthabeal/Documents/MSc/Bioinformatics"
+#"here() starts at /Users/samanthabeal/Documents/MSc/Bioinformatics/UNIX-opt-new"
 
-ASVs1 <- readDNAStringSet(here("230508/ASVs.fasta"), format = "fasta")
+ASVs1 <- readDNAStringSet(here("gDNA/230516/ASVs.fasta"), format = "fasta")
 
 # look at some of the sequences (optional)
 ASVs1
@@ -176,7 +185,7 @@ BrowseSeqs(alignedASVs, highlight=0)
 
 # write the alignment to a new FASTA file
 writeXStringSet(alignedASVs,
-                file="230508/alignedASVs.fasta")
+                file="gDNA/230516/alignedASVs.fasta")
 
 # Find differences among sequences (Hamming distance)----
 library(matrixcalc)
@@ -207,7 +216,7 @@ ggplot(ASVs1_diffs_long, aes(x=ASV,y=ASV2,fill=distance))+
 library("ape")
 library("pegas")
 
-UNIXdata <-read.dna("230508/alignedASVs.fasta", format="fasta")
+UNIXdata <-read.dna("gDNA/230516/alignedASVs.fasta", format="fasta")
 UNIXhaplo <- haplotype(UNIXdata)
 UNIXhaplo
 
@@ -215,13 +224,16 @@ UNIXhaplo
 
 UNIXhaplodist <- dist.dna(UNIXhaplo, "N")
 UNIXnetwork <- rmst(UNIXhaplodist, quiet = TRUE)
-UNIXnetwork
+UNIXnetwork 
 #5 haplotypes
 #9 links
 #link lengths between 0 and 1 steps
+print.default(UNIXnetwork)
 
 plot(UNIXnetwork)
 plot(UNIXnetwork, fast = TRUE)
+
+plot(UNIXnetwork, size = fq, pie = f.loc, labels = FALSE)
 
 #use popart to make haplotype network: need to convert to nexus file
 #make sure in ~samanthabeal directory in terminal

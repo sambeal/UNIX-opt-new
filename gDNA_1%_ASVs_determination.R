@@ -8,18 +8,18 @@
 #only keep samples (individual PCR reps) that >=1% total retained read depth
 #to remove low quality PCRs while maintaining high quality ones
 
+#managed to lose 230508 data, reassessed on 230516
 
 #set working directory----
 getwd()
+#"/Users/samanthabeal/Documents/MSc/Bioinformatics/UNIX-opt-new"
+
 
 #load data----
 library(readr)
-all <- readr::read_tsv("output1/ASV/derep.tsv", show_col_types = FALSE)
+all <- readr::read_tsv("gDNA/output/ASV/derep.tsv", show_col_types = FALSE)
 all <- as.data.frame(all)
 
-#set ASV name as rownames so only working with numeric columns
-#rownames(all) <- all[,1]
-#all <- all[-c(1)]
 
 #rename cols to be only fish name + index combo
 names(all) = gsub(pattern = "_.*", replacement = "", x = names(all))
@@ -323,12 +323,12 @@ all_1perc <- rbind(A1190222_1perc, A2190222_1perc, M1190222_1perc,
 
 
 
-#add sequences - make it new from shingle folder
+#add sequences - make it new from gDNA folder
 library (devtools)
 library(tidyverse)
 source_url("https://raw.githubusercontent.com/lrjoshi/FastaTabular/master/fasta_and_tabular.R")
 
-FastaToTabular("gDNA/output1/ASV/derep.fasta")
+FastaToTabular("gDNA/output/ASV/derep.fasta")
 #The output will be stored as dna_table.csv in the current directory ("Bioinformatics")
 file.rename("dna_table.csv", "dna_table_gDNA.csv")
 
@@ -369,6 +369,7 @@ all_1perc_seqs <- all_1perc_seqs %>% relocate(Sequence_length, .after = Sequence
 
 
 #save output for later analysis
-write_csv(all_1perc_seqs, "230508/1%_ASVs.csv")
+#make folder with today's date
+write_csv(all_1perc_seqs, "gDNA/230516/1%_ASVs.csv")
 
 
