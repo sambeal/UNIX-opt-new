@@ -79,7 +79,7 @@ mv /Users/samanthabeal/Documents/MSc/Bioinformatics/UNIX-opt-new/eDNA/release_02
 cd qc
 multiqc .
 
-#shingle qc = very poor. 31/54 samples failed seq quality histogram
+#release_02 qc = very poor. 31/54 samples failed seq quality histogram
 #release_02 qc = very poor. 32/50 samples failed seq quality histogram
 
 
@@ -166,7 +166,6 @@ grep -c ">M00" trimmed_concatenated.fasta
 ################ Dereplication ################
 
 # header of each unique sequence records number of copies in dataset
-
 vsearch --derep_fulllength trimmed_concatenated.fasta --output derep.fasta --sizeout --minuniquesize 10 --relabel uniq
 
 #count seqs
