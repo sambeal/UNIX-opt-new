@@ -22,9 +22,10 @@ echo $samples
 # count number of sequences across all files in folder
 cd input
 gzcat *.fastq.gz | grep -c "^@M00" 
+#2321597
 
 
-# count number of sequences per file and output as list
+# count number of sequences per file and output-e02 as list
 # must be in the folder where you want to count sequences
 #initial input files
 #gunzip = g unzip (opposit of this is gzip)
@@ -42,7 +43,7 @@ done
 
 cd .. 
 
-mkdir output
+mkdir output-e02
 
 # do not anchor (^) primers
 # because R1 only and 
@@ -55,20 +56,17 @@ mkdir output
 
 for s in $samples;
 do
-cutadapt -g TAGCTCAGCTGGTAGAGCAC...AAAAGCGTCTGCTAAATGGCA  \
--o output/${s}_L001_R1.fastq.gz --discard-untrimmed -m 70 \
+cutadapt -g TAGCTCAGCTGGTAGAGCAC...AAAAGCGTCTGCTAAATGGCA  -e 0.2 \
+-o output-e02/${s}_L001_R1.fastq.gz --discard-untrimmed -m 70 \
 input/${s}_L001_R1_001.fastq.gz;
 done
 
 
 # count number of sequences across all files in folder
-cd input
+cd ../output-e02
 gzcat *.fastq.gz | grep -c "^@M00"  
-#2321597
-
-cd ../output
-gzcat *.fastq.gz | grep -c "^@M00"  
-#1292472
+#1292472 (e0.1)
+#1312489 (e0.2)
 
 for s in $samples;
 do
@@ -82,7 +80,7 @@ done
 #####################
 # Sequence Quality
 #####################
-#make sure in output
+#make sure in output-e02
 
 # IF fusing rather than merging do this after quality filtering
 # make sure in folder 'trimmed'
@@ -92,9 +90,9 @@ mkdir qc
 # Run fastqc on each file in input
 ls *.fastq.gz | parallel 'fastqc {}'
 
-#Move qc outputs
-mv /Users/samanthabeal/Documents/MSc/Bioinformatics/UNIX-opt-new/gDNA/output/*.html /Users/samanthabeal/Documents/MSc/Bioinformatics/UNIX-opt-new/gDNA/output/qc
-mv /Users/samanthabeal/Documents/MSc/Bioinformatics/UNIX-opt-new/gDNA/output/*.zip /Users/samanthabeal/Documents/MSc/Bioinformatics/UNIX-opt-new/gDNA/output/qc
+#Move qc output-e02s
+mv /Users/samanthabeal/Documents/MSc/Bioinformatics/UNIX-opt-new/gDNA/output-e02/*.html /Users/samanthabeal/Documents/MSc/Bioinformatics/UNIX-opt-new/gDNA/output-e02/qc
+mv /Users/samanthabeal/Documents/MSc/Bioinformatics/UNIX-opt-new/gDNA/output-e02/*.zip /Users/samanthabeal/Documents/MSc/Bioinformatics/UNIX-opt-new/gDNA/output-e02/qc
 
 cd qc
 multiqc .
@@ -129,13 +127,14 @@ do
 done
 
 gzcat *.fastq.gz | grep -c "^@M00" 
-#1274208
+#1274208(e0.1)
+#1286929 (e0.2)
 
 
 
 ################ Concatenate Samples ################
 cd ..
-mkdir ASV #(in output)
+mkdir ASV #(in output-e02)
 
 cd trimmed
 gunzip *.fastq.gz
@@ -151,8 +150,8 @@ done
 #count seqs
 cd ../ASV
 grep -c "M00" trimmed_concatenated.fastq
-#1274208
-
+#1274208(e0.1)
+#1286929 (e0.2)
 
 
 
@@ -164,7 +163,9 @@ vsearch --fastx_filter trimmed_concatenated.fastq --fastaout trimmed_concatenate
 
 #count seqs - this way is not informative as to the depth/fish, only total
 grep -c ">M00" trimmed_concatenated.fasta
-#1274207 (one less bc cannot count seq count file)
+#(one less bc cannot count seq count file)
+#1274207 (e0.1)
+#1286928(e0.2)
 
 
 
